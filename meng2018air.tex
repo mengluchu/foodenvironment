@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{NO2 prediction in Madrid, Spain}
+\author{Meng Lu}
+\date{October 2017}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+The number of air quality measurement stations is often limited to quantify air pollution continuously in space and time. Other data sources such as physical and chemical model simulations and spatiotemporal correlations may play an important role in improving air pollution interpolation. In this study, we investigated different Spatiotemporal and non-spatiotemporal statistical models and integrated historical records and predictions from a MACC physi-chemical model simulations to station measurements to predict air quality pollution.
+
+We compared the results of air prediction from linear and non-linear regression models, geostatistical models, and random forest models. The linear and non-linear regression models assume no spatial correlation and purely predict using the MACC model simulations. We consider an ordinary kriging and an universal Kriging model to integrate spatial correlation and predict air pollution. For each linear/nonlinear regression, geostatistical, and random forest models, we attempted different methods and attempted to achieve the best results from these models.    
+
+The objectives are:
+\begin{itemize}
+\item Can spatial correlation between a limited number of air quality measurement stations be used to improve air quality prediction? 
+
+\item Can the MACC model simulation improve air quality prediction?
+
+\item How can we construct the random forest model to predict air quality with station measurements, MACC simulation, and temporal variables? Does the inclusion of time series characters, such as trend and harmonic terms improve model prediction? 
+
+\end{itemize}
+
+\section{Method}
+
+\begin{enumerate}
+    \item Interpolate MACC simulation
+    \item Linear regression model with MACC as an independent variable.
+    \item Polynomial and GAM (general additive model) with different orders of MACC as independent variables. 
+    \item Universal Kriging with MACC simulation.
+    \item Random forest prediction with MACC and different temporal variables. 
+    
+\end{enumerate}
+
+\section{Data}
+
+Three years historical record and prediction of MACC simulation grid. Three years 24 station measurements (to tran model or validate model) 
+
+
+
+
+
+
+
+%\bibliographystyle{plain}
+%\bibliography{references}
+\end{document}
