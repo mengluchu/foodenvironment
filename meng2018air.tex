@@ -12,6 +12,7 @@
 
 \maketitle
 
+
 \section{Introduction}
 
 The number of air quality measurement stations is often limited to quantify air pollution continuously in space and time. Other data sources such as physical and chemical model simulations and spatiotemporal correlations may play an important role in improving air pollution interpolation. In this study, we investigated different Spatiotemporal and non-spatiotemporal statistical models and integrated historical records and predictions from a MACC physi-chemical model simulations to station measurements to predict air quality pollution.
@@ -36,26 +37,26 @@ The objectives are to find the best prediction method with available data. The o
 
 Three years of hourly NO2 station measurements and MACC simulations are available. There are in total 24 stations distributed in Madrid, Spain. These station measurements are used to to train models and to validate the modeling results.
 
-The distribution of MACC forecast of NO2 shows very close to Gaussian. The distribution of the measured NO2 is a skewed Gaussian distribution with mean around 33.
+The distribution of MACC forecast of NO2 is very close to Gaussian. The distribution of the measured NO2 is a skewed Gaussian distribution with mean around 33.
 
 
 \section{Method}
-We consider a variety of linear, non-linear regression models, Ordinary and Universal kriging methods, and random forest methods to predict NO2 spatiotemporally. Each of these methods are described in detail.  
+We consider a variety of linear, non-linear regression models, ordinary and universal kriging methods, and random forest methods to predict NO2 spatiotemporally. Each of these methods are described in detail.  
 
 The NO2 predicting methods considered and compared are:
 \begin{enumerate}
     \item Ordinary kriging of MACC simulation
     \item Linear regression model with MACC, harmonic terms and time of day (TOD) as potential independent variables.
     \item Polynomial and GAM (general additive model) with MACC as independent variables. 
-    \item Universal Kriging with MACC simulation.
+    \item Universal Kriging with MACC simulation and potentially coordinates as variable.
     \item Random forest prediction with MACC and different temporal variables. 
      
 \end{enumerate}
 
 
 \subsection{Interpolation of MACC simulation} 
-
-We then computed a pooled variogram from MACC forecasts of 200 sampled time stamps, and fitted the variogram with an Ste model. This variogram model is then used to interpolate MACC forecasts to the city grid and to each of the measuring stations. 
+The MACC simulations show strong spatial correlation. In order to assimilate more information from historical MACC simulations, We computed a pooled variogram from MACC forecasts of 200 sampled time stamps. The variogram is automatically fitted with the initial parameters of nugget, sill and range set as \citet{automap}. An Ste (Matern, M. Stein’s parameterization
+) model is used to interpolate MACC forecasts to the city grid and to each of the measuring stations. 
 
 \subsection{Linear regression model with MACC as an independent variable.}
 
@@ -116,7 +117,7 @@ next halfday.
 
 
  
-\subsubsection{residual variogram} 
+\subsubsection{Residual variogram} 
 The residual variogram of a linear regression model with MACC simulations as a regressor.
 It could be observed that the spatial correlation is not revealed from the 24 station measurements. Three
 possible reasons are: 1) there are too few observations (stations), 2) there is a lack of information from
@@ -134,14 +135,11 @@ The pooled residual variogram (figure 6) with MACC and locations as independent 
 reveal spatial correlation.
 
 \subsection{Random forest}
-This study focuses on using random forest regression to forecast No2 MACC simulation, day of year (DOY), time of day (TOD), lagged MACC simulations and harmonic terms are used as independent variables.  
 
-The first half of the data (i.e. the first 2 years of time series, in total 1420 observations) are used to train the forest. The second half of the data (i.e. the last 2 years of time series, in total 1428 observations) are used to test the model. The missing values are filled using spline interpolation. 
+At last, we used a machine learning method to find a relationship between NO2 station measurements, MACC simulation, and other temporal variables. Specipically, we used MACC simulation,  day of year (DOY), time of day (TOD), lagged MACC simulations and harmonic terms as independent variables in random forest models.  
 
-The permutation importance (Altmann et al., 2010) is used as an important measure. It is reported in Altmann et al. (2010) that this measure corrects the bias of other conventional importance measures (i.e., Gini importance and vairable importance) for categorical and grouped variables.  
+The R package "ranger" is used to perform random forest. In this study, it is found that ranger is faster than the "randomforest package". 
 
-The R package "ranger" is used to perform random forest. The "ranger" package aims at optimising for multi-dimensional anaylsis. In this study, it is found that ranger is faster than the "randomforest package". I did not compare all the results from difference R packages for random forest, it might be of interest to do so. 
- 
  Table 1 shows the variables that are used in each model. The harmonic term that is used in model 2  ($|sin(2 \pi wt) + \phi|$) is used in the one of the random forest model. The differences between model 4.2a and model 4.2b is that the model 4.2b treats DOY as factors while model 4.2a treats it as numbers. As using a lagged MACC (as is used for Ozone) to forecast Ozone obtains the lowest accuracy, and is slow, for NO2 this model is taken off.  
 
 
@@ -161,11 +159,12 @@ Model &  Independent variable\\ \hline
 \label{table:rf}
 \end{table}
 
-\subsubsection{ Accuracy assessment}
+ 
 
-Obtaining the importance of each variable using the permutation importance proposed by Altmann (2010). Using half of the time series to train the model and another half to test the model. The models are assesssed using out of bag (OOB) prediction error and OOB R square (internal cross validation) of the trainning set. Same as the accuracy assessment of the model 1-3, we assess the accuracy using median, IQR (interquartile range), Bias(the mean of errors), RMSE (Root Mean Square Error), and MAE(Mean Absolute Error). 
+\section{Accuracy assessment}
 
-All the models were firstly trained and tested with a single station measuremntes and then trained and tested with all the station measurements.    
+The first half of the data (i.e. the first 1.5 years of time series, in total 1420 observations) are used to train the forest. The second half of the data (i.e. the last 1.5 years of time series, in total 1428 observations) are used to test the model. The missing values are filled using spline interpolation.  
+The error of Model 3c is accessed different from other models, as spatial errors are assessed. It is not feasible to compare station measurements and predictions at each station because the prediction at each station are very close to the station measurements (i.e., the prediction errors will be very small at the stations).  
 
 
 \section{Results}
@@ -173,18 +172,18 @@ All the models were firstly trained and tested with a single station measuremnte
 Errors (differences between predictions and station measurements) of applying the developed models (the best model of each report) to the testing set (the second half of the all the time series). Random forest models obtained lower errors in terms of mean and median. Model 4.3 obtained the best accuracy, and it is simple.  
 \begin{table}[h!]
 \centering
-\begin{tabular}{ c l c c c c c}
- Model &Method & Meidan & IQR& Mean&  RMSE& MAE \\
+\begin{tabular}{ c l l c c c c c}
+ Model &Method& independent variables& Meidan & IQR& Mean&  RMSE& MAE \\
  \hline
- 1     &OK       & -18.29 &	22.74&	-22.20 &	28.76 &	21.13\\
- 2a    &LM            & 4.3   & 23.2     & 5.32 & 19.73 & 16.00 \\
- 2b    &LM  & -2.51 & 26.68 & -5.90 & 23.09 & 17.44\\ 
- 3c    &UK         & -6.26 & 35.2 & -0.75 & 31.10 & 24.28\\
- 4.1   &RF   &  1.90 & 19.71  & -0.26 & 19.54 & 14.80 \\
- 4.2a  &RF              & 1.11& 20.97 & -2.69& 20.13 & 15.21  \\
- 4.2b  &RF   & 1.17 & 21.00  & -2.66 & 20.16 & 15.24 \\
- 4.3   &RF         & 1.10 & 21.60  & -0.60  & 20.58 & 15.76\\
- 4.4   &RF              & 0.64 & 23.59  & -1.15  & 22.21 & 16.92 \\
+ 1     &OK & \-                 & -18.29 &	22.74&	-22.20 &	28.76 &	21.13\\
+ 2a    &LM & MACC                  & 4.3   & 23.2     & 5.32 & 19.73 & 16.00 \\
+ 2b    &LM & MACC, har, TOD   & -2.51 & 26.68 & -5.90 & 23.09 & 17.44\\ 
+ 3c    &UK & MACC             & -6.26 & 35.2 & -0.75 & 31.10 & 24.28\\
+ 4.1   &RF & DOY, MACC, TOD, har &  6.14 &	20.84 &	6.65 &	20.34 &	15.39\\
+ 4.2a  &RF & DOY, MACC, TOD                     & 6.60 &	20.89	& 7.06 &	20.07 &	15.16 \\
+ 4.2b  &RF & DOY(factor) MACC, TOD  & 6.61&	20.83	& 7.07 &	20.08	& 15.16 \\
+ 4.3   &RF & DOY, MACC              & 6.03&	21.64	& 6.50 &	20.58	& 15.76 \\
+ 4.4   &RF & MACC                   &6.01 &	23.63	& 6.56 &	22.21	& 16.91 \\
 \hline
 \end{tabular}
 \caption{Accuracy assessment results of the best models of method OK (ordinary kriging), LM (linear regression) and UK (universal kriging), and all the models of the RF (random forest) regression. MACC: MACC simulations. TOD: time of day. DOY: day of year. har: harmonic terms.  
@@ -194,20 +193,28 @@ Errors (differences between predictions and station measurements) of applying th
  
  
  
-\subsection{Model 1} 
+\subsection{MACC interpolation} 
 Interpolation of MACC forecasts: Strong spatial correlation are shown between MACC forecasts for all the parameters. Relatively low interpolation error.
 
-\subsection{Model 2a-d}  
-Basic downscaling model: There is a linear relationship between MACC forecasts and station measurements of Ozone, the polynomial and general additive model were also applied but a linear model is selected for Ozone. The linear relationship between NO2 station measurements and MACC simulations are less obvious comparing to the Ozone case. For different models, Polynomial model of different orders and a general additive model were attempted. Harmonic terms were also used to fit the model.  
+\subsection{Linear and nonlinear regression model}  
+The linear relationship between MACC forecasts and station measurements of NO2 is not so strong. Polynomial model of different orders and a general additive model were attempted. Harmonic terms were also used to fit the model.  
 
-\subsection{Model 3a-c}  
-Universal kriging: There are 14 stations available for Ozone and 24 stations available for NO2. Possibly because of this, Applying universal kriging to NO2 has received better results comparing to Ozone. Pooled residual variograms were used and calculated. No spatial correlation between stations for all the variables can be indicated from the variograms of stations. So a variogram model is manually decided (by assigning a variogram sill and a nugget) by observing the pooled variogram, assuming spatial correlation exists within shorter distances. There are spatial trends for all the variables, therefore locations are used as regressors together witht the MACC simulation.  
+\subsection{Universal Kriging model}  
+There are 24 stations available for NO2 and we calculated pooled residual variograms to draw more information from historical measurements; however, the sample size is still small for identifying spatial correlations. Eventually, we manually assigned the sill and nuggest of a variogram model by observing the pooled variogram, assuming spatial correlation exists within shorter distances. There are spatial trends for all the variables, therefore locations are used as regressors together witht the MACC simulation.  
 
-\subsection{Model 4.1-4-6}  
-Random forest regression: One or more of the variables of MACC simulation, day of year (DOY), time of day, lagged MACC simulations and harmonic terms are used as independent variables. Random forest methods have obtained improved results comparing to other methods for both Ozone and NO2. For both of the methods, using MACC and DOY as independent variables received the best results.   
+\subsection{Random forest model}  
+Random forest regression: One or more of the variables of MACC simulation, day of year (DOY), time of day, lagged MACC simulations and harmonic terms are used as independent variables. Random forest methods have obtained similar results with different parameters. The model 4.3, which uses MACC and DOY could be the most favorable random forest model due to its simplicity and high accuracy 
 
-In summary, for both Ozone and NO2, the random forest regression models can obtain the lowest RMSE (the best accuracy and lowest variance). Spatial correlation may be used in random forest (as distance) to further improve the accuracy. If random forest is not available, the linear regeression model 2a (for Ozone) or 2b (for NO2) is very simple and the result it obtained is not bad. Model 2a (for Ozone) or 2b (for NO3) obtains a bigger variance and higher MAE, but is significantly improved from model 1. The error of Model3c is accessed different from other models, as spatial errors are assessed. As we have mentioned in report 3, a variogram model which assumes spatial correlation within distances smaller than between stations is manually fitted, it is possible that model 3c has some advantage when applying the model to predict the air quality of the whole city grid. Among all the random forest models, model 4.3 could be the most favorable model to use due to its simplicity and high accuracy. Apart from model 1, most methods (universal kriging model, linear regression model and Random forest) obtained better results for NO2 than for Ozone.   
+
+\section{Discussion}
+It might be of interest to compare different randomforest implementaions. 
+
+\section{Conclusion}
+
+In summary, the linear regression model 2a and the random forest 4.3 obtain the lowest RMSE (the best accuracy and lowest variance). Spatial correlation may be used in random forest (as distance) to further improve the accuracy. The linear regression models and random forest models significantly improve from model 1, indicating the integration of station measurements can improve model accuracy. 
+
+The error of Model 3c is accessed different from other models, as spatial errors are assessed. It is not feasible to compare station measurements and predictions at each station because the prediction at each station are very close to the station measurements (i.e., the prediction errors will be very small at the stations). It is possible that model 3c has some advantage when applying the model to predict the air quality of the whole city grid.    
 
 \bibliographystyle{plain}
-%\bibliography{references}
+\bibliography{references}
 \end{document}
